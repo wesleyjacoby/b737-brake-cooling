@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>B737 Brake Energy Calculator</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <main class="wrap stack">
+        <section class="card">
+            <h1>B737-800 Brake Energy Calculator</h1>
+            <p>
+                Calculates brake energy and brake cooling information for an RTO
+                in the B737-800.
+            </p>
+
+            <div class="meta">
+                <span class="pill">737-800W / CFM56-7B26</span>
+                <span class="pill">FAA / EU-OPS</span>
+            </div>
+        </section>
+
+        <section class="card stack">
+            <h2>Inputs</h2>
+
+            <div class="grid">
+                <div class="field">
+                    <label for="weightKg">Aircraft weight (kg)</label>
+                    <input id="weightKg" type="number" inputmode="decimal" min="40000" max="80000" step="100"
+                        placeholder="e.g. 67500" />
+                </div>
+
+                <div class="field">
+                    <label for="oatC">OAT (°C)</label>
+                    <input id="oatC" type="number" inputmode="decimal" min="0" max="50" step="0.1"
+                        placeholder="e.g. 18" />
+                </div>
+
+                <div class="field">
+                    <label for="speedKias">Brakes-on speed (KIAS)</label>
+                    <input id="speedKias" type="number" inputmode="decimal" min="80" max="180" step="0.1"
+                        placeholder="e.g. 132" />
+                </div>
+
+                <div class="field">
+                    <label for="pressureAltFt">Pressure altitude (ft)</label>
+                    <input id="pressureAltFt" type="number" inputmode="decimal" min="0" max="10000" step="10"
+                        placeholder="e.g. 3200" />
+                </div>
+
+                <div class="field">
+                    <label for="reverseThrust">Reverse thrust</label>
+                    <select id="reverseThrust">
+                        <option value="no_reverse">No reverse thrust</option>
+                        <option value="detent_reverse">Two-engine detent reverse thrust</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="brakeType">Brake type</label>
+                    <select id="brakeType">
+                        <option value="steel">Category C steel brakes</option>
+                        <option value="carbon">Category N carbon brakes</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="primary" id="calcBtn" type="button">Calculate</button>
+                <button class="secondary" id="clearBtn" type="button">Clear</button>
+            </div>
+
+            <p class="footnote">
+                Disclaimer: This calculator is intended for educational and informational purposes only. It is not a
+                substitute for official Boeing documentation or professional training. Always refer to the Boeing FCOM
+                and consult with qualified personnel for actual flight operations.
+            </p>
+        </section>
+
+        <section class="card result">
+            <div class="hero-value">
+                <div class="hero-label" id="resultLabel">Cooling result</div>
+                <div class="hero-number" id="resultValue">—</div>
+                <div class="hero-unit" id="resultUnit">Enter the inputs and tap Calculate.</div>
+            </div>
+
+            <div class="details-grid secondary-results">
+                <div>
+                    <strong>Reference energy</strong>
+                    <span id="referenceEnergyValue">—</span>
+                </div>
+                <div>
+                    <strong>Adjusted energy</strong>
+                    <span id="adjustedEnergyValue">—</span>
+                </div>
+                <div>
+                    <strong>BTMS equivalent</strong>
+                    <span id="btmsValue">—</span>
+                </div>
+                <div>
+                    <strong>Zone</strong>
+                    <span id="zoneValue">—</span>
+                </div>
+            </div>
+
+            <div class="status" id="statusBox">
+                Enter the inputs and tap Calculate.
+            </div>
+
+            <details>
+                <summary>Show details</summary>
+                <div class="details-body">
+                    <div class="details-grid" id="detailsGrid">
+                        <div><strong>Weight bracket</strong><span>—</span></div>
+                        <div><strong>OAT bracket</strong><span>—</span></div>
+                        <div><strong>Speed bracket</strong><span>—</span></div>
+                        <div><strong>Altitude bracket</strong><span>—</span></div>
+                        <div><strong>Raw reference energy</strong><span>—</span></div>
+                        <div><strong>Displayed reference energy</strong><span>—</span></div>
+                        <div><strong>Reverse thrust</strong><span>—</span></div>
+                        <div><strong>Brake type</strong><span>—</span></div>
+                        <div><strong>Adjusted brake energy</strong><span>—</span></div>
+                        <div><strong>BTMS equivalent</strong><span>—</span></div>
+                        <div><strong>Cooling time</strong><span>—</span></div>
+                        <div><strong>Zone</strong><span>—</span></div>
+                        <div><strong>Inflight note</strong><span>—</span></div>
+                        <div><strong>Ground note</strong><span>—</span></div>
+                    </div>
+
+                    <p class="footnote">
+                        Reference brake energy is conservatively rounded up to the next tenth before the RTO adjustment
+                        step.
+                    </p>
+                </div>
+            </details>
+        </section>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
