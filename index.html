@@ -10,7 +10,7 @@
     <main class="wrap stack">
         <section class="card">
             <h1>B737-800 Brake Energy Calculator</h1>
-            <p>
+            <p class="center">
                 Calculates brake energy and brake cooling information for an RTO
                 in the B737-800.
             </p>
@@ -32,15 +32,17 @@
                 </div>
 
                 <div class="field">
-                    <label for="oatC">OAT (°C)</label>
-                    <input id="oatC" type="number" inputmode="decimal" min="0" max="50" step="0.1"
-                        placeholder="e.g. 18" />
+                    <label for="entryMode">Entry mode</label>
+                    <select id="entryMode">
+                        <option value="ias_corrected">IAS corrected for wind</option>
+                        <option value="groundspeed">Groundspeed</option>
+                    </select>
                 </div>
 
                 <div class="field">
-                    <label for="speedKias">Brakes-on speed (KIAS)</label>
-                    <input id="speedKias" type="number" inputmode="decimal" min="80" max="180" step="0.1"
-                        placeholder="e.g. 132" />
+                    <label for="oatC">OAT (°C)</label>
+                    <input id="oatC" type="number" inputmode="decimal" min="0" max="50" step="0.1"
+                        placeholder="e.g. 18" />
                 </div>
 
                 <div class="field">
@@ -50,10 +52,35 @@
                 </div>
 
                 <div class="field">
+                    <label for="speedKias" id="speedLabel">Brakes-on speed (KIAS)</label>
+                    <input id="speedKias" type="number" inputmode="decimal" min="80" max="180" step="0.1"
+                        placeholder="e.g. 132" />
+                </div>
+
+                <div class="field">
+                    <label for="windType">Wind type</label>
+                    <select id="windType">
+                        <option value="headwind">Headwind</option>
+                        <option value="tailwind">Tailwind</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="windComponent">Wind component (kt)</label>
+                    <input id="windComponent" type="number" inputmode="decimal" min="0" step="0.1"
+                        placeholder="e.g. 12" />
+                </div>
+
+                <div class="field">
+                    <label for="taxiMiles">Taxi miles after stop (optional)</label>
+                    <input id="taxiMiles" type="number" inputmode="decimal" min="0" step="0.1" placeholder="e.g. 0.8" />
+                </div>
+
+                <div class="field">
                     <label for="reverseThrust">Reverse thrust</label>
                     <select id="reverseThrust">
-                        <option value="no_reverse">No reverse thrust</option>
                         <option value="detent_reverse">Two-engine detent reverse thrust</option>
+                        <option value="no_reverse">No reverse thrust</option>
                     </select>
                 </div>
 
@@ -72,7 +99,13 @@
             </div>
 
             <p class="footnote">
-                Disclaimer: This calculator is intended for educational and informational purposes only. It is not a
+                IAS mode applies the Boeing wind correction to brakes-on speed. Groundspeed mode ignores wind and enters
+                the first table at sea level and 15°C. Taxi miles after stop can be added to adjusted brake energy.
+            </p>
+
+            <p class="footnote">
+                <b>Disclaimer:</b> This calculator is intended for educational and informational purposes only. It is
+                not a
                 substitute for official Boeing documentation or professional training. Always refer to the Boeing FCOM
                 and consult with qualified personnel for actual flight operations.
             </p>
@@ -112,6 +145,11 @@
                 <summary>Show details</summary>
                 <div class="details-body">
                     <div class="details-grid" id="detailsGrid">
+                        <div><strong>Entry mode</strong><span>—</span></div>
+                        <div><strong>Wind correction</strong><span>—</span></div>
+                        <div><strong>Table speed used</strong><span>—</span></div>
+                        <div><strong>Table OAT used</strong><span>—</span></div>
+                        <div><strong>Table altitude used</strong><span>—</span></div>
                         <div><strong>Weight bracket</strong><span>—</span></div>
                         <div><strong>OAT bracket</strong><span>—</span></div>
                         <div><strong>Speed bracket</strong><span>—</span></div>
@@ -120,6 +158,7 @@
                         <div><strong>Displayed reference energy</strong><span>—</span></div>
                         <div><strong>Reverse thrust</strong><span>—</span></div>
                         <div><strong>Brake type</strong><span>—</span></div>
+                        <div><strong>Taxi mile addition</strong><span>—</span></div>
                         <div><strong>Adjusted brake energy</strong><span>—</span></div>
                         <div><strong>BTMS equivalent</strong><span>—</span></div>
                         <div><strong>Cooling time</strong><span>—</span></div>

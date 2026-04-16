@@ -1,7 +1,12 @@
 const weightInput = document.getElementById("weightKg");
+const entryModeInput = document.getElementById("entryMode");
 const oatInput = document.getElementById("oatC");
+const speedLabel = document.getElementById("speedLabel");
 const speedInput = document.getElementById("speedKias");
 const altInput = document.getElementById("pressureAltFt");
+const windTypeInput = document.getElementById("windType");
+const windComponentInput = document.getElementById("windComponent");
+const taxiMilesInput = document.getElementById("taxiMiles");
 const reverseThrustInput = document.getElementById("reverseThrust");
 const brakeTypeInput = document.getElementById("brakeType");
 
@@ -19,6 +24,10 @@ const detailsGrid = document.getElementById("detailsGrid");
 
 const calcBtn = document.getElementById("calcBtn");
 const clearBtn = document.getElementById("clearBtn");
+
+const GS_MODE_TABLE_OAT = 15;
+const GS_MODE_TABLE_ALT = 0;
+const TAXI_MILE_ADDITION = 1.0;
 
 function setStatus(message, type = "neutral") {
 	statusBox.textContent = message;
@@ -201,7 +210,7 @@ function calculateCoolingTime(schedule, adjustedEnergy) {
 
 	const energyAxis = schedule.adjustedEnergyBreakpoints.slice(0, 7);
 	const btmsAxis = schedule.btmsBreakpoints.slice(0, 7);
-	const coolingEnergyAxis = energyAxis.slice(1); // timed points only
+	const coolingEnergyAxis = energyAxis.slice(1);
 	const coolingAxis = schedule.groundCoolingMinutes;
 
 	if (adjustedEnergy <= energyAxis[0]) {
@@ -216,8 +225,6 @@ function calculateCoolingTime(schedule, adjustedEnergy) {
 		};
 	}
 
-	// Handle the narrow gap between the last timed point and the caution band.
-	// Example: steel 32.0 to <33.0, carbon 29.4 to <30.0
 	if (adjustedEnergy > coolingEnergyAxis[coolingEnergyAxis.length - 1]) {
 		return {
 			zone: "caution",
@@ -275,6 +282,11 @@ function updateHero({
 }
 
 function updateDetails({
+	entryMode = "—",
+	windCorrection = "—",
+	tableSpeedUsed = "—",
+	tableOatUsed = "—",
+	tableAltitudeUsed = "—",
 	weightBracket = "—",
 	oatBracket = "—",
 	speedBracket = "—",
@@ -283,6 +295,7 @@ function updateDetails({
 	displayedReferenceValue = "—",
 	reverseThrust = "—",
 	brakeType = "—",
+	taxiMileAddition = "—",
 	adjustedBrakeEnergy = "—",
 	btmsEquivalent = "—",
 	coolingTime = "—",
@@ -291,6 +304,11 @@ function updateDetails({
 	groundNote = "—",
 }) {
 	detailsGrid.innerHTML = `
+		<div><strong>Entry mode</strong><span>${entryMode}</span></div>
+		<div><strong>Wind correction</strong><span>${windCorrection}</span></div>
+		<div><strong>Table speed used</strong><span>${tableSpeedUsed}</span></div>
+		<div><strong>Table OAT used</strong><span>${tableOatUsed}</span></div>
+		<div><strong>Table altitude used</strong><span>${tableAltitudeUsed}</span></div>
 		<div><strong>Weight bracket</strong><span>${weightBracket}</span></div>
 		<div><strong>OAT bracket</strong><span>${oatBracket}</span></div>
 		<div><strong>Speed bracket</strong><span>${speedBracket}</span></div>
@@ -299,6 +317,7 @@ function updateDetails({
 		<div><strong>Displayed reference energy</strong><span>${displayedReferenceValue}</span></div>
 		<div><strong>Reverse thrust</strong><span>${reverseThrust}</span></div>
 		<div><strong>Brake type</strong><span>${brakeType}</span></div>
+		<div><strong>Taxi mile addition</strong><span>${taxiMileAddition}</span></div>
 		<div><strong>Adjusted brake energy</strong><span>${adjustedBrakeEnergy}</span></div>
 		<div><strong>BTMS equivalent</strong><span>${btmsEquivalent}</span></div>
 		<div><strong>Cooling time</strong><span>${coolingTime}</span></div>
@@ -322,28 +341,45 @@ function clearOutputs() {
 
 function readInputs() {
 	const weightKg = Number(weightInput.value);
+	const entryMode = entryModeInput.value;
 	const oatC = Number(oatInput.value);
 	const speedKias = Number(speedInput.value);
 	const pressureAltFt = Number(altInput.value);
+	const windType = windTypeInput.value;
+	const windComponent =
+		windComponentInput.value === "" ? 0 : Number(windComponentInput.value);
+	const taxiMiles =
+		taxiMilesInput.value === "" ? 0 : Number(taxiMilesInput.value);
 	const reverseThrust = reverseThrustInput.value;
 	const brakeType = brakeTypeInput.value;
 
-	if (
-		!weightInput.value ||
-		!oatInput.value ||
-		!speedInput.value ||
-		!altInput.value
-	) {
+	if (!weightInput.value || !speedInput.value) {
 		throw new Error("Please complete all required input fields.");
+	}
+
+	if (entryMode === "ias_corrected") {
+		if (!oatInput.value || !altInput.value) {
+			throw new Error("OAT and altitude are required in IAS mode.");
+		}
 	}
 
 	if (
 		Number.isNaN(weightKg) ||
 		Number.isNaN(oatC) ||
 		Number.isNaN(speedKias) ||
-		Number.isNaN(pressureAltFt)
+		Number.isNaN(pressureAltFt) ||
+		Number.isNaN(windComponent) ||
+		Number.isNaN(taxiMiles)
 	) {
 		throw new Error("One or more inputs are invalid.");
+	}
+
+	if (windComponent < 0) {
+		throw new Error("Wind component cannot be negative.");
+	}
+
+	if (taxiMiles < 0) {
+		throw new Error("Taxi miles cannot be negative.");
 	}
 
 	if (!RTO_ADJUSTMENTS[reverseThrust]) {
@@ -356,9 +392,13 @@ function readInputs() {
 
 	return {
 		weightT: weightKg / 1000,
+		entryMode,
 		oatC,
 		speedKias,
 		altT: pressureAltFt / 1000,
+		windType,
+		windComponent,
+		taxiMiles,
 		reverseThrust,
 		brakeType,
 	};
@@ -376,24 +416,114 @@ function getBrakeTypeLabel(value) {
 		: "Category C steel brakes";
 }
 
+function getEntryModeLabel(value) {
+	return value === "groundspeed" ? "Groundspeed" : "IAS corrected for wind";
+}
+
+function updateInputState() {
+	const mode = entryModeInput.value;
+	const isGS = mode === "groundspeed";
+
+	oatInput.disabled = isGS;
+	altInput.disabled = isGS;
+	windTypeInput.disabled = isGS;
+	windComponentInput.disabled = isGS;
+
+	speedLabel.textContent = isGS
+		? "Brakes-on speed (GS)"
+		: "Brakes-on speed (KIAS)";
+
+	if (isGS) {
+		oatInput.value = "";
+		altInput.value = "";
+		windComponentInput.value = "";
+	}
+}
+
+function buildTableEntryInputs({
+	entryMode,
+	oatC,
+	speedKias,
+	altT,
+	windType,
+	windComponent,
+}) {
+	if (entryMode === "groundspeed") {
+		return {
+			tableOat: GS_MODE_TABLE_OAT,
+			tableAlt: GS_MODE_TABLE_ALT,
+			tableSpeed: speedKias,
+			windCorrectionLabel:
+				"Groundspeed mode selected — wind ignored, table entered at 15°C and sea level",
+		};
+	}
+
+	let correctedSpeed = speedKias;
+
+	if (windType === "headwind") {
+		correctedSpeed = speedKias - windComponent / 2;
+	} else {
+		correctedSpeed = speedKias + windComponent * 1.5;
+	}
+
+	return {
+		tableOat: oatC,
+		tableAlt: altT,
+		tableSpeed: correctedSpeed,
+		windCorrectionLabel:
+			windType === "headwind"
+				? `IAS ${formatNumber(speedKias, 1)} - 0.5 × ${formatNumber(windComponent, 1)} = ${formatNumber(correctedSpeed, 1)} kt`
+				: `IAS ${formatNumber(speedKias, 1)} + 1.5 × ${formatNumber(windComponent, 1)} = ${formatNumber(correctedSpeed, 1)} kt`,
+	};
+}
+
 function calculateBrakeCooling() {
 	try {
-		const { weightT, oatC, speedKias, altT, reverseThrust, brakeType } =
-			readInputs();
+		const {
+			weightT,
+			entryMode,
+			oatC,
+			speedKias,
+			altT,
+			windType,
+			windComponent,
+			taxiMiles,
+			reverseThrust,
+			brakeType,
+		} = readInputs();
 
-		const referenceResult = interpolate4D(weightT, oatC, speedKias, altT);
+		const tableEntry = buildTableEntryInputs({
+			entryMode,
+			oatC,
+			speedKias,
+			altT,
+			windType,
+			windComponent,
+		});
+
+		const referenceResult = interpolate4D(
+			weightT,
+			tableEntry.tableOat,
+			tableEntry.tableSpeed,
+			tableEntry.tableAlt,
+		);
+
 		const displayedReferenceEnergy = conservativeRoundUpToTenth(
 			referenceResult.value,
 		);
 
-		const adjustedBrakeEnergy = calculateAdjustedBrakeEnergy(
+		const adjustedBrakeEnergyBeforeTaxi = calculateAdjustedBrakeEnergy(
 			displayedReferenceEnergy,
 			reverseThrust,
 		);
 
+		const taxiMileAddition = taxiMiles * TAXI_MILE_ADDITION;
+		const adjustedBrakeEnergyFinal =
+			adjustedBrakeEnergyBeforeTaxi + taxiMileAddition;
+
 		const coolingResult = calculateCoolingTime(
 			COOLING_SCHEDULES[brakeType],
-			adjustedBrakeEnergy,
+			adjustedBrakeEnergyFinal,
 		);
 
 		if (coolingResult.coolingTimeMinutes === null) {
@@ -418,19 +548,24 @@ function calculateBrakeCooling() {
 
 		updateSummaryCards({
 			referenceEnergy: `${formatNumber(displayedReferenceEnergy, 1)} M ft-lb/brake`,
-			adjustedEnergy: `${formatNumber(adjustedBrakeEnergy, 1)} M ft-lb/brake`,
+			adjustedEnergy: `${formatNumber(adjustedBrakeEnergyFinal, 1)} M ft-lb/brake`,
 			btmsEquivalent: coolingResult.btmsEquivalent,
 			zone: coolingResult.zoneLabel,
 		});
 
 		const statusMessage =
 			coolingResult.coolingTimeMinutes === null
-				? `Reference ${formatNumber(displayedReferenceEnergy, 1)} M ft-lb/brake • Adjusted ${formatNumber(adjustedBrakeEnergy, 1)} M ft-lb/brake • ${coolingResult.zoneLabel}.`
-				: `Reference ${formatNumber(displayedReferenceEnergy, 1)} M ft-lb/brake • Adjusted ${formatNumber(adjustedBrakeEnergy, 1)} M ft-lb/brake • Cooling time ${formatNumber(coolingResult.coolingTimeMinutes, 1)} min.`;
+				? `Reference ${formatNumber(displayedReferenceEnergy, 1)} M ft-lb/brake • Adjusted ${formatNumber(adjustedBrakeEnergyFinal, 1)} M ft-lb/brake • ${coolingResult.zoneLabel}.`
+				: `Reference ${formatNumber(displayedReferenceEnergy, 1)} M ft-lb/brake • Adjusted ${formatNumber(adjustedBrakeEnergyFinal, 1)} M ft-lb/brake • Cooling time ${formatNumber(coolingResult.coolingTimeMinutes, 1)} min.`;
 
 		setStatus(statusMessage, "ok");
 
 		updateDetails({
+			entryMode: getEntryModeLabel(entryMode),
+			windCorrection: tableEntry.windCorrectionLabel,
+			tableSpeedUsed: `${formatNumber(tableEntry.tableSpeed, 1)} kt`,
+			tableOatUsed: `${formatNumber(tableEntry.tableOat, 1)} °C`,
+			tableAltitudeUsed: `${formatNumber(tableEntry.tableAlt, 1)} x1000 ft`,
 			weightBracket: `${referenceResult.bounds.w.low.toFixed(0)} to ${referenceResult.bounds.w.high.toFixed(0)} x1000 kg`,
 			oatBracket: `${referenceResult.bounds.o.low.toFixed(0)} to ${referenceResult.bounds.o.high.toFixed(0)} °C`,
 			speedBracket: `${referenceResult.bounds.s.low.toFixed(0)} to ${referenceResult.bounds.s.high.toFixed(0)} KIAS`,
@@ -439,7 +574,8 @@ function calculateBrakeCooling() {
 			displayedReferenceValue: `${formatNumber(displayedReferenceEnergy, 1)} M ft-lb/brake`,
 			reverseThrust: getReverseThrustLabel(reverseThrust),
 			brakeType: getBrakeTypeLabel(brakeType),
-			adjustedBrakeEnergy: `${formatNumber(adjustedBrakeEnergy, 1)} M ft-lb/brake`,
+			taxiMileAddition: `${formatNumber(taxiMileAddition, 1)} M ft-lb/brake`,
+			adjustedBrakeEnergy: `${formatNumber(adjustedBrakeEnergyFinal, 1)} M ft-lb/brake`,
 			btmsEquivalent: coolingResult.btmsEquivalent,
 			coolingTime: coolingResult.coolingTimeLabel,
 			zone: coolingResult.zoneLabel,
@@ -460,14 +596,23 @@ function calculateBrakeCooling() {
 
 calcBtn.addEventListener("click", calculateBrakeCooling);
 
+entryModeInput.addEventListener("change", updateInputState);
+
 clearBtn.addEventListener("click", () => {
 	weightInput.value = "";
+	entryModeInput.value = "ias_corrected";
 	oatInput.value = "";
 	speedInput.value = "";
 	altInput.value = "";
-	reverseThrustInput.value = "no_reverse";
+	windTypeInput.value = "headwind";
+	windComponentInput.value = "";
+	taxiMilesInput.value = "";
+	reverseThrustInput.value = "detent_reverse";
 	brakeTypeInput.value = "steel";
+
+	updateInputState();
 	clearOutputs();
 });
 
+updateInputState();
 clearOutputs();
