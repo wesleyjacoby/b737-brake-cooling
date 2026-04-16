@@ -48,6 +48,16 @@ function conservativeRoundUpToTenth(value) {
 	return Math.ceil(value * 10) / 10;
 }
 
+function scrollToResults() {
+	const el = document.getElementById("resultsCard");
+	if (!el) return;
+
+	el.scrollIntoView({
+		behavior: "smooth",
+		block: "start",
+	});
+}
+
 function findBounds(axis, value) {
 	if (value < axis[0] || value > axis[axis.length - 1]) {
 		throw new Error(
@@ -582,6 +592,8 @@ function calculateBrakeCooling() {
 			inflightNote: coolingResult.inflightNote,
 			groundNote: coolingResult.groundNote,
 		});
+
+		setTimeout(scrollToResults, 100);
 	} catch (error) {
 		updateHero({
 			label: "Cooling result",
