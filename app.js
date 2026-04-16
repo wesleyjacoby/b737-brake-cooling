@@ -21,6 +21,8 @@ const zoneValue = document.getElementById("zoneValue");
 
 const statusBox = document.getElementById("statusBox");
 const detailsGrid = document.getElementById("detailsGrid");
+const detailsSection = document.getElementById("detailsSection");
+const detailsSummary = document.getElementById("detailsSummary");
 
 const calcBtn = document.getElementById("calcBtn");
 const clearBtn = document.getElementById("clearBtn");
@@ -52,10 +54,20 @@ function scrollToResults() {
 	const el = document.getElementById("resultsCard");
 	if (!el) return;
 
-	el.scrollIntoView({
+	const y = el.getBoundingClientRect().top + window.scrollY;
+
+	window.scrollTo({
+		top: y,
 		behavior: "smooth",
-		block: "start",
 	});
+}
+
+function updateDetailsSummary() {
+	if (!detailsSection || !detailsSummary) return;
+
+	detailsSummary.textContent = detailsSection.open
+		? "Hide details"
+		: "Show details";
 }
 
 function findBounds(axis, value) {
@@ -593,7 +605,18 @@ function calculateBrakeCooling() {
 			groundNote: coolingResult.groundNote,
 		});
 
-		setTimeout(scrollToResults, 100);
+		setTimeout(() => {
+			if (detailsSection && !detailsSection.open) {
+				detailsSection.open = true;
+				updateDetailsSummary();
+			}
+
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					scrollToResults();
+				});
+			});
+		}, 100);
 	} catch (error) {
 		updateHero({
 			label: "Cooling result",
@@ -610,6 +633,11 @@ calcBtn.addEventListener("click", calculateBrakeCooling);
 
 entryModeInput.addEventListener("change", updateInputState);
 
+if (detailsSection) {
+	detailsSection.addEventListener("toggle", updateDetailsSummary);
+}
+updateDetailsSummary();
+
 clearBtn.addEventListener("click", () => {
 	weightInput.value = "";
 	entryModeInput.value = "ias_corrected";
@@ -623,8 +651,19 @@ clearBtn.addEventListener("click", () => {
 	brakeTypeInput.value = "steel";
 
 	updateInputState();
+
+	if (detailsSection) {
+		detailsSection.open = false;
+		updateDetailsSummary();
+	}
+
 	clearOutputs();
 });
 
 updateInputState();
 clearOutputs();
+
+if (detailsSection) {
+	detailsSection.open = false;
+	updateDetailsSummary();
+}

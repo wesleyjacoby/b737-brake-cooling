@@ -28,7 +28,7 @@ body {
 .wrap {
 	max-width: 920px;
 	margin: 0 auto;
-	padding: 20px;
+	padding: 20px 20px 45vh;
 }
 
 .stack {
@@ -272,18 +272,50 @@ summary {
 	padding: 14px 16px;
 	font-weight: 700;
 	user-select: none;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }
 
 summary::-webkit-details-marker {
 	display: none;
 }
 
+summary::after {
+	content: "";
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+	background-image: url("data:image/svg+xml;utf8,<svg fill='none' stroke='%23667085' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='m6 9 6 6 6-6'/></svg>");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 18px;
+	transition: transform 0.22s ease;
+}
+
+details[open] summary::after {
+	transform: rotate(180deg);
+}
+
 .details-body {
 	border-top: 1px solid var(--line);
-	padding: 14px 16px 16px;
+	padding: 0 16px;
 	color: var(--muted);
 	display: grid;
 	gap: 12px;
+	max-height: 0;
+	opacity: 0;
+	overflow: hidden;
+	transition:
+		max-height 0.28s ease,
+		opacity 0.2s ease,
+		padding 0.28s ease;
+}
+
+details[open] .details-body {
+	padding: 14px 16px 16px;
+	max-height: 1200px;
+	opacity: 1;
 }
 
 .details-grid {
