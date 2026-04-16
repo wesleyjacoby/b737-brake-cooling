@@ -200,7 +200,7 @@ function calculateCoolingTime(schedule, adjustedEnergy) {
 		return {
 			zone: "caution",
 			zoneLabel: "Caution zone",
-			btmsEquivalent: `${schedule.btmsBreakpoints[schedule.btmsBreakpoints.length - 2]} to ${schedule.btmsBreakpoints[schedule.btmsBreakpoints.length - 1]}`,
+			btmsEquivalent: `${schedule.btmsBreakpoints[schedule.btmsBreakpoints.length - 3]} to ${schedule.btmsBreakpoints[schedule.btmsBreakpoints.length - 2]}`,
 			coolingTimeMinutes: null,
 			coolingTimeLabel: "No timed value shown in this band",
 			inflightNote: schedule.inflight.caution,
@@ -229,7 +229,7 @@ function calculateCoolingTime(schedule, adjustedEnergy) {
 		return {
 			zone: "caution",
 			zoneLabel: "Caution zone",
-			btmsEquivalent: `${btmsAxis[btmsAxis.length - 1]} to ${schedule.btmsBreakpoints[schedule.btmsBreakpoints.length - 2]}`,
+			btmsEquivalent: `${schedule.btmsBreakpoints[schedule.btmsBreakpoints.length - 3]} to ${schedule.btmsBreakpoints[schedule.btmsBreakpoints.length - 2]}`,
 			coolingTimeMinutes: null,
 			coolingTimeLabel: "No timed value shown in this band",
 			inflightNote: schedule.inflight.caution,
