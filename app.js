@@ -24,6 +24,9 @@ const detailsGrid = document.getElementById("detailsGrid");
 const detailsSection = document.getElementById("detailsSection");
 const detailsSummary = document.getElementById("detailsSummary");
 
+const resultsCard = document.getElementById("resultsCard");
+const zoneText    = document.getElementById("zoneText");
+
 const calcBtn = document.getElementById("calcBtn");
 const clearBtn = document.getElementById("clearBtn");
 
@@ -31,14 +34,22 @@ const GS_MODE_TABLE_OAT = 15;
 const GS_MODE_TABLE_ALT = 0;
 const TAXI_MILE_ADDITION = 1.0;
 
+function setZone(zoneKey, zoneLabel) {
+	if (!resultsCard) return;
+	resultsCard.className = "result-card " + zoneKey;
+	if (zoneText) zoneText.textContent = zoneLabel;
+}
+
 function setStatus(message, type = "neutral") {
 	statusBox.textContent = message;
 	statusBox.className = "status";
 
 	if (type === "error") {
 		statusBox.classList.add("error");
-	} else if (type === "ok") {
-		statusBox.classList.add("ok");
+		statusBox.style.display = "block";
+	} else {
+		// Hide non-error status — the hero card communicates success
+		statusBox.style.display = "none";
 	}
 }
 
@@ -286,20 +297,28 @@ function updateSummaryCards({
 	adjustedEnergy = "—",
 	btmsEquivalent = "—",
 	zone = "—",
+	zoneKey = "idle",
 }) {
 	referenceEnergyValue.textContent = referenceEnergy;
+	referenceEnergyValue.className = referenceEnergy === "—" ? "stat-value idle" : "stat-value";
 	adjustedEnergyValue.textContent = adjustedEnergy;
+	adjustedEnergyValue.className = adjustedEnergy === "—" ? "stat-value idle" : "stat-value";
 	btmsValue.textContent = btmsEquivalent;
+	btmsValue.className = btmsEquivalent === "—" ? "stat-value idle" : "stat-value";
 	zoneValue.textContent = zone;
+	zoneValue.className = zone === "—" ? "stat-value idle" : "stat-value";
+	setZone(zoneKey, zone);
 }
 
 function updateHero({
 	label = "Cooling result",
 	value = "—",
 	unit = "Enter the inputs and tap Calculate.",
+	idle = false,
 }) {
 	resultLabel.textContent = label;
 	resultValue.textContent = value;
+	resultValue.className = idle ? "result-number idle" : "result-number";
 	resultUnit.textContent = unit;
 }
 
@@ -325,38 +344,42 @@ function updateDetails({
 	inflightNote = "—",
 	groundNote = "—",
 }) {
-	detailsGrid.innerHTML = `
-		<div><strong>Entry mode</strong><span>${entryMode}</span></div>
-		<div><strong>Wind correction</strong><span>${windCorrection}</span></div>
-		<div><strong>Table speed used</strong><span>${tableSpeedUsed}</span></div>
-		<div><strong>Table OAT used</strong><span>${tableOatUsed}</span></div>
-		<div><strong>Table altitude used</strong><span>${tableAltitudeUsed}</span></div>
-		<div><strong>Weight bracket</strong><span>${weightBracket}</span></div>
-		<div><strong>OAT bracket</strong><span>${oatBracket}</span></div>
-		<div><strong>Speed bracket</strong><span>${speedBracket}</span></div>
-		<div><strong>Altitude bracket</strong><span>${altitudeBracket}</span></div>
-		<div><strong>Raw reference energy</strong><span>${rawReferenceValue}</span></div>
-		<div><strong>Displayed reference energy</strong><span>${displayedReferenceValue}</span></div>
-		<div><strong>Reverse thrust</strong><span>${reverseThrust}</span></div>
-		<div><strong>Brake type</strong><span>${brakeType}</span></div>
-		<div><strong>Taxi mile addition</strong><span>${taxiMileAddition}</span></div>
-		<div><strong>Adjusted brake energy</strong><span>${adjustedBrakeEnergy}</span></div>
-		<div><strong>BTMS equivalent</strong><span>${btmsEquivalent}</span></div>
-		<div><strong>Cooling time</strong><span>${coolingTime}</span></div>
-		<div><strong>Zone</strong><span>${zone}</span></div>
-		<div><strong>Inflight note</strong><span>${inflightNote}</span></div>
-		<div><strong>Ground note</strong><span>${groundNote}</span></div>
-	`;
+	const row = (key, val) =>
+		`<div class="detail-item"><div class="detail-key">${key}</div><div class="detail-val">${val}</div></div>`;
+
+	detailsGrid.innerHTML =
+		row("Entry mode", entryMode) +
+		row("Wind correction", windCorrection) +
+		row("Table speed used", tableSpeedUsed) +
+		row("Table OAT used", tableOatUsed) +
+		row("Table altitude used", tableAltitudeUsed) +
+		row("Weight bracket", weightBracket) +
+		row("OAT bracket", oatBracket) +
+		row("Speed bracket", speedBracket) +
+		row("Altitude bracket", altitudeBracket) +
+		row("Raw reference energy", rawReferenceValue) +
+		row("Displayed reference energy", displayedReferenceValue) +
+		row("Reverse thrust", reverseThrust) +
+		row("Brake type", brakeType) +
+		row("Taxi mile addition", taxiMileAddition) +
+		row("Adjusted brake energy", adjustedBrakeEnergy) +
+		row("BTMS equivalent", btmsEquivalent) +
+		row("Cooling time", coolingTime) +
+		row("Zone", zone) +
+		row("Inflight note", inflightNote) +
+		row("Ground note", groundNote);
 }
 
 function clearOutputs() {
 	updateHero({
 		label: "Cooling result",
 		value: "—",
-		unit: "Enter the inputs and tap Calculate.",
+		unit: "Enter inputs and tap Calculate",
+		idle: true,
 	});
 
 	updateSummaryCards({});
+	setZone("idle", "Awaiting calculation");
 	setStatus("Enter the inputs and tap Calculate.");
 	updateDetails({});
 }
@@ -553,26 +576,32 @@ function calculateBrakeCooling() {
 				label: "Cooling result",
 				value: coolingResult.zoneLabel,
 				unit: coolingResult.coolingTimeLabel,
+				idle: false,
 			});
 		} else if (coolingResult.coolingTimeMinutes === 0) {
 			updateHero({
 				label: "Cooling result",
 				value: "No special cooling",
 				unit: "No special cooling time required",
+				idle: false,
 			});
 		} else {
 			updateHero({
 				label: "Cooling time",
 				value: formatNumber(coolingResult.coolingTimeMinutes, 1),
 				unit: "minutes",
+				idle: false,
 			});
 		}
+
+		const zoneKey = coolingResult.zone === "fusePlugMelt" ? "fuse" : coolingResult.zone;
 
 		updateSummaryCards({
 			referenceEnergy: `${formatNumber(displayedReferenceEnergy, 1)} M ft-lb/brake`,
 			adjustedEnergy: `${formatNumber(adjustedBrakeEnergyFinal, 1)} M ft-lb/brake`,
 			btmsEquivalent: coolingResult.btmsEquivalent,
 			zone: coolingResult.zoneLabel,
+			zoneKey,
 		});
 
 		const statusMessage =
@@ -622,8 +651,10 @@ function calculateBrakeCooling() {
 			label: "Cooling result",
 			value: "—",
 			unit: "Enter the inputs and tap Calculate.",
+			idle: true,
 		});
 		updateSummaryCards({});
+		setZone("idle", "Awaiting calculation");
 		setStatus(error.message, "error");
 		updateDetails({});
 	}
