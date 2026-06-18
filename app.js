@@ -698,3 +698,62 @@ if (detailsSection) {
 	detailsSection.open = false;
 	updateDetailsSummary();
 }
+
+/* ─── Install banner ─────────────────────────────────────────────────────── */
+(function () {
+	const banner   = document.getElementById("installBanner");
+	const btn      = document.getElementById("installBtn");
+	const dismiss  = document.getElementById("installDismiss");
+	const title    = document.getElementById("installTitle");
+	const sub      = document.getElementById("installSub");
+
+	if (!banner) return;
+
+	// Don't show if already installed (standalone mode)
+	if (window.matchMedia("(display-mode: standalone)").matches) return;
+
+	// Don't show if user already dismissed
+	if (localStorage.getItem("installDismissed")) return;
+
+	let deferredPrompt = null;
+
+	const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+	const isAndroid = /android/i.test(navigator.userAgent);
+
+	if (isIOS) {
+		// iOS: show static tip with share icon instruction
+		title.textContent = "Add to home screen";
+		sub.textContent = "Tap the share icon, then 'Add to Home Screen'";
+		banner.classList.add("ios");
+		banner.style.display = "flex";
+	}
+
+	// Android/Chrome: wait for browser install prompt
+	window.addEventListener("beforeinstallprompt", (e) => {
+		e.preventDefault();
+		deferredPrompt = e;
+		title.textContent = "Add to home screen";
+		sub.textContent = "Install for offline use, any time";
+		banner.style.display = "flex";
+	});
+
+	// Install button clicked
+	btn.addEventListener("click", async () => {
+		if (!deferredPrompt) return;
+		deferredPrompt.prompt();
+		const { outcome } = await deferredPrompt.userChoice;
+		deferredPrompt = null;
+		banner.style.display = "none";
+	});
+
+	// Dismiss
+	dismiss.addEventListener("click", () => {
+		banner.style.display = "none";
+		localStorage.setItem("installDismissed", "1");
+	});
+
+	// Hide if app gets installed mid-session
+	window.addEventListener("appinstalled", () => {
+		banner.style.display = "none";
+	});
+})();
