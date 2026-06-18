@@ -1,22 +1,56 @@
 {
-  "name": "B737 Brake Energy Calculator",
-  "short_name": "Brake Energy",
-  "description": "B737-800 RTO brake energy and cooling calculator. 737-800W / CFM56-7B26 FAA / EU-OPS.",
-  "start_url": "/b737-brake-cooling/",
-  "scope": "/b737-brake-cooling/",
-  "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#080f1e",
-  "theme_color": "#080f1e",
-  "categories": ["utilities"],
-  "icons": [
-    { "src": "icons/icon-72.png",  "sizes": "72x72",   "type": "image/png" },
-    { "src": "icons/icon-96.png",  "sizes": "96x96",   "type": "image/png" },
-    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png" },
-    { "src": "icons/icon-144.png", "sizes": "144x144", "type": "image/png" },
-    { "src": "icons/icon-152.png", "sizes": "152x152", "type": "image/png" },
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-256.png", "sizes": "256x256", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-  ]
+	"name": "B737 Brake Energy Calculator",
+	"short_name": "Brake Energy",
+	"description": "B737-800 RTO brake energy and cooling calculator. 737-800W / CFM56-7B26 FAA / EU-OPS.",
+	"start_url": "https://wesleyjacoby.github.io/b737-brake-cooling/",
+	"scope": "https://wesleyjacoby.github.io/b737-brake-cooling/",
+	"display": "standalone",
+	"orientation": "portrait-primary",
+	"background_color": "#080f1e",
+	"theme_color": "#080f1e",
+	"categories": ["utilities"],
+	"icons": [
+		{
+			"src": "https://wesleyjacoby.github.io/b737-brake-cooling/icons/icon-72.png",
+			"sizes": "72x72",
+			"type": "image/png"
+		},
+		{
+			"src": "https://wesleyjacoby.github.io/b737-brake-cooling/icons/icon-96.png",
+			"sizes": "96x96",
+			"type": "image/png"
+		},
+		{
+			"src": "https://wesleyjacoby.github.io/b737-brake-cooling/icons/icon-128.png",
+			"sizes": "128x128",
+			"type": "image/png"
+		},
+		{
+			"src": "https://wesleyjacoby.github.io/b737-brake-cooling/icons/icon-144.png",
+			"sizes": "144x144",
+			"type": "image/png"
+		},
+		{
+			"src": "https://wesleyjacoby.github.io/b737-brake-cooling/icons/icon-152.png",
+			"sizes": "152x152",
+			"type": "image/png"
+		},
+		{
+			"src": "https://wesleyjacoby.github.io/b737-brake-cooling/icons/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "any maskable"
+		},
+		{
+			"src": "https://wesleyjacoby.github.io/b737-brake-cooling/icons/icon-256.png",
+			"sizes": "256x256",
+			"type": "image/png"
+		},
+		{
+			"src": "https://wesleyjacoby.github.io/b737-brake-cooling/icons/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any maskable"
+		}
+	]
 }
