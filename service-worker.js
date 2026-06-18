@@ -1,14 +1,16 @@
 const CACHE = "b737-brake-v1";
 
+const BASE = "/b737-brake-cooling";
+
 const ASSETS = [
-  "/",
-  "/index.html",
-  "/styles.css",
-  "/app.js",
-  "/data.js",
-  "/manifest.json",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png"
+  BASE + "/",
+  BASE + "/index.html",
+  BASE + "/styles.css",
+  BASE + "/app.js",
+  BASE + "/data.js",
+  BASE + "/manifest.json",
+  BASE + "/icons/icon-192.png",
+  BASE + "/icons/icon-512.png"
 ];
 
 // Install: cache all assets
